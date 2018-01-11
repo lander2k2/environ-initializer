@@ -1,0 +1,3 @@
+[[override]]
+  revision = "019ae5ada31de202164b118aee88ee2d14075c31"
+  name = "k8s.io/apimachinery"
