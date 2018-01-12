@@ -77,3 +77,13 @@ You should now see the desired env vars where applicable.
       -namespace string
             The namespace where the configmap lives (default "default")
 
+## Build Instructions
+
+First, modify `build.env` with your desired container repo and tag.
+
+Build go binary: `$ make build-go`
+
+Build container image: `$ make build-container`
+
+Build go binary, container image and push to container registry: `$ make all`
+
