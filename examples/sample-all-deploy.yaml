@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sample-all
+  namespace: default
+  labels:
+    role: example
+  annotations:
+    initializers.kubernetes.io/environ: '{"environments":["http-proxy", "service-x"]}'
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: sample-all
+      labels:
+        role: example
+    spec:
+      containers:
+      - name: sample-all
+        image: quay.io/lander2k2/crashcart:latest
+        imagePullPolicy: Always
+
+
