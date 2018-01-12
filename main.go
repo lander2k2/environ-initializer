@@ -108,13 +108,17 @@ func main() {
 					// inject the env vars into the existing containers.
 					containersCopy := append([]corev1.Container(nil), deployment.Spec.Template.Spec.Containers...)
 					for env := range cm.Data {
-						var envVars map[string][]corev1.EnvVar
-						err := yaml.Unmarshal([]byte(cm.Data[env]), &envVars)
-						if err != nil {
-							log.Printf("Error: could not unmarshal data from configmap: %v", cm.Data[env])
-						}
-						for i := range containersCopy {
-							containersCopy[i].Env = append(containersCopy[i].Env, envVars["envVars"]...)
+						for _, e := range aEnvs["environments"] {
+							if env == e {
+								var envVars map[string][]corev1.EnvVar
+								err := yaml.Unmarshal([]byte(cm.Data[env]), &envVars)
+								if err != nil {
+									log.Printf("Error: could not unmarshal data from configmap: %v", cm.Data[env])
+								}
+								for i := range containersCopy {
+									containersCopy[i].Env = append(containersCopy[i].Env, envVars["envVars"]...)
+								}
+							}
 						}
 					}
 					deploymentCopy.Spec.Template.Spec.Containers = containersCopy
