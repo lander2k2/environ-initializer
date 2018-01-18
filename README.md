@@ -39,7 +39,7 @@ Create a namespace for the initializer.
 
 ### Deploy RBAC
 
-If you ahve [RBAC enabled](https://kubernetes.io/docs/admin/authorization/rbac/) in your cluster give your initializer the needed permissions.
+If you have [RBAC enabled](https://kubernetes.io/docs/admin/authorization/rbac/) in your cluster give your initializer the needed permissions.
 
 	$ kubectl apply -f examples/environ-initializer-rbac.yaml
 
