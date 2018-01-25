@@ -79,11 +79,21 @@ You should now see the desired env vars where applicable.
 
 ## Build Instructions
 
-First, modify `build.env` with your desired container repo and tag.
+Set environment variables `IMAGE_REPO` and `IMAGE_TAG`.
 
 Build go binary: `$ make build-go`
 
-Build container image: `$ make build-container`
+Build container image: `$ make build-image`
 
-Build go binary, container image and push to container registry: `$ make all`
+Build go binary, container image and push to container registry: `$ make release`
+
+## Run Tests
+
+In addiont to the env vars needed for builds, set the `KUBECONFIG` environment variable for a cluster in which you can test.
+
+Tests will use the image tag `test` instead of `$IMAGE_TAG`.
+
+Build test image, push to registry and test: `$ make test`
+
+If you want to re-test an image that has already been pushed: `$ make e2e-test`
 
