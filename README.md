@@ -1,5 +1,7 @@
 # Environment Initializer
 
+[![Build Status](https://travis-ci.org/lander2k2/environ-initializer.svg?branch=master)](https://travis-ci.org/lander2k2/environ-initializer)
+
 This Kubernetes initializer will load environment variables into a deployment's
 containers.  The initializer is triggered by annotations applied to the desired
 deployments and adds env vars specified in a configmap.
