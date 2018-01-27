@@ -1,3 +1,5 @@
+default: unit-test
+
 release: build-go build-image push clean
 
 test: unit-test build-go build-image-test push-test clean e2e-test
