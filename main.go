@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ghodss/yaml"
+	"github.com/lander2k2/environ-initializer/environ"
 
 	"k8s.io/api/apps/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -83,69 +83,41 @@ func main() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 
-				deployment := obj.(*v1beta1.Deployment)
-				deploymentCopyObj, err := runtime.NewScheme().DeepCopy(deployment)
-				if err != nil {
-					panic(err.Error())
-				}
-				deploymentCopy := deploymentCopyObj.(*v1beta1.Deployment)
-
-				// check deployment for the trigger annotation
-				annotations := deployment.ObjectMeta.GetAnnotations()
-				annotationValue, hasAnnotation := annotations[annotation]
+				// identify deployments that have annotation
+				deploy := obj.(*v1beta1.Deployment)
+				hasAnnotation, annotationValue := environ.Identify(annotation, deploy)
 
 				if hasAnnotation {
-					log.Printf("Annotation '%v' found on deployment '%v'", annotation, deployment.Name)
-					log.Printf("Annotation value: '%v'", annotationValue)
+					log.Printf("Annotation '%v' found on deployment '%v'", annotation, deploy.Name)
 
-					// examine the value of the annotation to determine which environments to patch in
-					var aEnvs map[string][]string
-					err := json.Unmarshal([]byte(annotationValue), &aEnvs)
+					// generate deployment patch
+					patchedDeploy, err := environ.Patch(annotationValue, deploy, cm)
 					if err != nil {
-						log.Printf("Error: could not unmarshal json: %v", annotationValue)
+						log.Printf("Failed to generate patch for '%v': %v", deploy.Name, err)
 					}
 
-					// inject the env vars into the existing containers.
-					containersCopy := append([]corev1.Container(nil), deployment.Spec.Template.Spec.Containers...)
-					for env := range cm.Data {
-						for _, e := range aEnvs["environments"] {
-							if env == e {
-								var envVars map[string][]corev1.EnvVar
-								err := yaml.Unmarshal([]byte(cm.Data[env]), &envVars)
-								if err != nil {
-									log.Printf("Error: could not unmarshal data from configmap: %v", cm.Data[env])
-								}
-								for i := range containersCopy {
-									containersCopy[i].Env = append(containersCopy[i].Env, envVars["envVars"]...)
-								}
-							}
-						}
-					}
-					deploymentCopy.Spec.Template.Spec.Containers = containersCopy
-
-					oldData, err := json.Marshal(deployment)
+					deployJson, err := json.Marshal(deploy)
 					if err != nil {
-						panic(err.Error())
+						log.Printf("Failed to marshal deployment '%v' JSON data: %v", deploy.Name, err)
 					}
 
-					newData, err := json.Marshal(deploymentCopy)
+					patchedDeployJson, err := json.Marshal(patchedDeploy)
 					if err != nil {
-						panic(err.Error())
+						log.Printf("Failed to marshal patched deployment '%v' JSON data: %v", deploy.Name, err)
 					}
 
 					// patch the original deployment.
-					patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, v1beta1.Deployment{})
+					patchBytes, err := strategicpatch.CreateTwoWayMergePatch(deployJson, patchedDeployJson, v1beta1.Deployment{})
 					if err != nil {
-						panic(err.Error())
+						log.Printf("Failed to patch %v: %v", deploy.Name, err)
 					}
 
-					_, err = clientset.AppsV1beta1().Deployments(deployment.Namespace).Patch(deployment.Name, types.StrategicMergePatchType, patchBytes)
+					_, err = clientset.AppsV1beta1().Deployments(deploy.Namespace).Patch(deploy.Name, types.StrategicMergePatchType, patchBytes)
 					if err != nil {
-						panic(err.Error())
+						log.Printf("Failed to initialize %v: %v", deploy.Name, err)
 					}
 
-					log.Printf("Deployment '%v' patched", deployment.Name)
-
+					log.Printf("Deployment '%v' patched", deploy.Name)
 				}
 			},
 		},

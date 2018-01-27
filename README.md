@@ -87,13 +87,19 @@ Build container image: `$ make build-image`
 
 Build go binary, container image and push to container registry: `$ make release`
 
-## Run Tests
+## Tests
+
+Run all tests: `$ make test`
+
+### Unit Tests
+
+Unit tests only: `$ make unit-test`
+
+### End-to-End Tests
 
 In addiont to the env vars needed for builds, set the `KUBECONFIG` environment variable for a cluster in which you can test.
 
-Tests will use the image tag `test` instead of `$IMAGE_TAG`.
-
-Build test image, push to registry and test: `$ make test`
+E2E tests will use the image tag `test` instead of `$IMAGE_TAG`.
 
 If you want to re-test an image that has already been pushed: `$ make e2e-test`
 
