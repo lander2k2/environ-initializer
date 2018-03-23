@@ -1,0 +1,25 @@
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  name: sample-proxy
+  namespace: default
+  labels:
+    role: example
+  annotations:
+    initializers.kubernetes.io/environ: '{"environments":["http-proxy"]}'
+spec:
+  selector:
+    matchLabels:
+      role: example
+  template:
+    metadata:
+      name: sample-proxy
+      labels:
+        role: example
+    spec:
+      containers:
+      - name: sample-proxy
+        image: quay.io/lander2k2/crashcart:latest
+        imagePullPolicy: Always
+
+

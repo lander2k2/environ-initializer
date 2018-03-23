@@ -16,7 +16,7 @@ spec:
       serviceAccountName: environ-initializer
       containers:
       - name: environ-initializer
-        image: quay.io/lander2k2/environ-initializer:0.1
+        image: quay.io/lander2k2/environ-initializer:ds
         args: ["-namespace", "cluster-addons"]
         imagePullPolicy: Always
 
